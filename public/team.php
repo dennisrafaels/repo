@@ -89,7 +89,7 @@ $members = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="stat-label">Team Members</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">3</div>
+    <div class="stat-number">2</div>
     <div class="stat-label">Database Tables</div>
   </div>
   <div class="stat-card">
