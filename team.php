@@ -90,7 +90,7 @@ $members = [
 
 <section class="hero">
   <div class="hero-tag">Meet the Team</div>
-  <h1>Built by <em>students,</em><br>for students</h1>
+  <h1>JUJU</h1>
   <p>We created ActivityHub to help campus communities discover, share, and organize activities — all in one place.</p>
 </section>
 
