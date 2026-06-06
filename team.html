@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team — ActivityHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13; --surface: #1a1a22; --surface2: #22222e;
+    --border: #2e2e3e; --accent: #c8f135; --accent2: #7c6af7;
+    --text: #f0f0f5; --text-muted: #888899;
+    --font-head: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; }
+
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 36px; border-bottom: 1px solid var(--border);
+  }
+  .logo { font-family: var(--font-head); font-size: 1.5rem; font-weight: 800; }
+  .logo span { color: var(--accent); }
+  nav a {
+    color: var(--text-muted); text-decoration: none; font-size: 0.875rem;
+    margin-left: 20px; transition: 0.15s;
+  }
+  nav a:hover, nav a.active { color: var(--text); }
+
+  .hero {
+    text-align: center;
+    padding: 80px 20px 60px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-tag {
+    display: inline-block;
+    background: rgba(200,241,53,0.1);
+    color: var(--accent);
+    border: 1px solid rgba(200,241,53,0.3);
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-family: var(--font-head);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .hero h1 em { color: var(--accent); font-style: normal; }
+  .hero p { color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0 auto; line-height: 1.6; }
+
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    max-width: 1100px;
+    margin: 60px auto;
+    padding: 0 36px;
+  }
+
+  .member-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    transition: 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .member-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--accent-color, var(--accent));
+  }
+  .member-card:hover { transform: translateY(-4px); border-color: var(--accent-color, var(--accent)); }
+
+  .member-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--surface2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem;
+    margin-bottom: 16px;
+    border: 2px solid var(--border);
+  }
+  .member-name {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .member-role {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+  .member-id {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+  .member-bio {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+  }
+  .member-skills { display: flex; flex-wrap: wrap; gap: 6px; }
+  .skill-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    color: var(--text-muted);
+  }
+
+  .project-section {
+    max-width: 1100px;
+    margin: 0 auto 80px;
+    padding: 0 36px;
+  }
+  .section-heading {
+    font-family: var(--font-head);
+    font-size: 1.6rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+  }
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .project-card h3 { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 10px; }
+  .project-card p { font-size: 0.875rem; color: var(--text-muted); line-height: 1.7; }
+  .tech-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .tech-badge {
+    background: rgba(124,106,247,0.15);
+    color: var(--accent2);
+    border: 1px solid rgba(124,106,247,0.3);
+    border-radius: 6px;
+    font-size: 0.75rem;
+    padding: 4px 10px;
+    font-weight: 500;
+  }
+
+  @media (max-width: 700px) {
+    .team-grid { padding: 0 20px; }
+    .project-card { grid-template-columns: 1fr; gap: 20px; }
+    header { padding: 16px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Activity<span>Hub</span></div>
+  <nav>
+    <a href="index.html">Calendar</a>
+    <a href="team.html" class="active">Team</a>
+  </nav>
+</header>
+
+<section class="hero">
+  <div class="hero-tag">Meet the Team</div>
+  <h1>Built by <em>students,</em><br>for students</h1>
+  <p>We created ActivityHub to help campus communities discover, share, and organize activities — all in one place.</p>
+</section>
+
+<!-- ── TEAM MEMBERS ── Edit this section with your real info ── -->
+<div class="team-grid">
+
+  <div class="member-card" style="--accent-color:#c8f135">
+    <div class="member-avatar">👨‍💻</div>
+    <div class="member-name">Your Name Here</div>
+    <div class="member-role">Full Stack Developer</div>
+    <div class="member-id">Student ID: XXXXXXXX</div>
+    <p class="member-bio">
+      Responsible for the PHP backend, database design, and API architecture. Passionate about building clean, efficient web systems.
+    </p>
+    <div class="member-skills">
+      <span class="skill-tag">PHP</span>
+      <span class="skill-tag">MariaDB</span>
+      <span class="skill-tag">REST API</span>
+    </div>
+  </div>
+
+  <div class="member-card" style="--accent-color:#7c6af7">
+    <div class="member-avatar">👩‍🎨</div>
+    <div class="member-name">Your Name Here</div>
+    <div class="member-role">Frontend Developer</div>
+    <div class="member-id">Student ID: XXXXXXXX</div>
+    <p class="member-bio">
+      Designed and built the user interface, calendar views, and interactive modals. Focused on creating a smooth, enjoyable user experience.
+    </p>
+    <div class="member-skills">
+      <span class="skill-tag">HTML</span>
+      <span class="skill-tag">CSS</span>
+      <span class="skill-tag">JavaScript</span>
+    </div>
+  </div>
+
+  <div class="member-card" style="--accent-color:#ff9800">
+    <div class="member-avatar">👨‍🔬</div>
+    <div class="member-name">Your Name Here</div>
+    <div class="member-role">Database Administrator</div>
+    <div class="member-id">Student ID: XXXXXXXX</div>
+    <p class="member-bio">
+      Managed database schema, optimization, and seeding. Also handled server configuration on the Raspberry Pi 0 2W platform.
+    </p>
+    <div class="member-skills">
+      <span class="skill-tag">SQL</span>
+      <span class="skill-tag">RPi Setup</span>
+      <span class="skill-tag">Linux</span>
+    </div>
+  </div>
+
+  <div class="member-card" style="--accent-color:#ff5722">
+    <div class="member-avatar">👩‍📋</div>
+    <div class="member-name">Your Name Here</div>
+    <div class="member-role">Project Manager</div>
+    <div class="member-id">Student ID: XXXXXXXX</div>
+    <p class="member-bio">
+      Coordinated team workflow, wrote project documentation (README, UserGuide, AdminGuide), and managed the GitHub repository.
+    </p>
+    <div class="member-skills">
+      <span class="skill-tag">Git</span>
+      <span class="skill-tag">Documentation</span>
+      <span class="skill-tag">Testing</span>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── PROJECT INFO ── -->
+<div class="project-section">
+  <div class="section-heading">About the Project</div>
+  <div class="project-card">
+    <div>
+      <h3>🎯 What We Built</h3>
+      <p>ActivityHub is a campus activity calendar that lets students create, discover, and join activities. From study groups to sports games, everything is in one place with real-time RSVP tracking and category filters.</p>
+    </div>
+    <div>
+      <h3>⚙️ Tech Stack</h3>
+      <p>Built with vanilla web technologies as required — no frameworks used. Runs on a Raspberry Pi 0 2W with a PHP scripting engine and MariaDB database.</p>
+      <div class="tech-list">
+        <span class="tech-badge">HTML5</span>
+        <span class="tech-badge">CSS3</span>
+        <span class="tech-badge">Vanilla JS</span>
+        <span class="tech-badge">PHP</span>
+        <span class="tech-badge">MariaDB</span>
+        <span class="tech-badge">RPi 0 2W</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

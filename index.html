@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ActivityHub — Campus Calendar</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #1a1a22;
+    --surface2: #22222e;
+    --border: #2e2e3e;
+    --accent: #c8f135;
+    --accent2: #7c6af7;
+    --text: #f0f0f5;
+    --text-muted: #888899;
+    --danger: #ff4d6d;
+    --radius: 14px;
+    --font-head: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 36px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(15,15,19,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--font-head);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+  .logo span { color: var(--accent); }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  /* ── BUTTONS ── */
+  .btn {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 0.875rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 9px 18px;
+    transition: all 0.18s ease;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0f0f13;
+  }
+  .btn-primary:hover { background: #d4f545; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger { background: var(--danger); color: white; }
+  .btn-danger:hover { background: #ff2d55; }
+  .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+  /* ── MAIN LAYOUT ── */
+  .app {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    min-height: calc(100vh - 65px);
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+
+  .mini-calendar {}
+  .mini-cal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+  .mini-cal-header h3 {
+    font-family: var(--font-head);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+  .mini-cal-header button {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: 0.15s;
+  }
+  .mini-cal-header button:hover { background: var(--surface2); color: var(--text); }
+
+  .mini-cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    text-align: center;
+  }
+  .mini-cal-grid .day-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 4px 0;
+    font-weight: 500;
+  }
+  .mini-cal-grid .day {
+    font-size: 0.8rem;
+    padding: 5px 3px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.15s;
+    color: var(--text-muted);
+  }
+  .mini-cal-grid .day:hover { background: var(--surface2); color: var(--text); }
+  .mini-cal-grid .day.today { background: var(--accent2); color: white; font-weight: 600; }
+  .mini-cal-grid .day.selected { background: var(--accent); color: #0f0f13; font-weight: 700; }
+  .mini-cal-grid .day.has-event::after {
+    content: '';
+    display: block;
+    width: 4px; height: 4px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin: 1px auto 0;
+  }
+  .mini-cal-grid .day.today.has-event::after,
+  .mini-cal-grid .day.selected.has-event::after { background: white; }
+  .mini-cal-grid .day.empty { cursor: default; }
+
+  /* Categories filter */
+  .section-title {
+    font-family: var(--font-head);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .category-filters { display: flex; flex-direction: column; gap: 6px; }
+  .cat-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.15s;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+  }
+  .cat-chip:hover { background: var(--surface2); }
+  .cat-chip.active { background: var(--surface2); border-color: var(--border); }
+  .cat-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── MAIN CONTENT ── */
+  .main { padding: 28px 32px; overflow-y: auto; }
+
+  .view-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .view-title { font-family: var(--font-head); font-size: 1.8rem; font-weight: 800; }
+  .view-subtitle { font-size: 0.875rem; color: var(--text-muted); margin-top: 2px; }
+
+  /* ── CALENDAR GRID ── */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  .cal-day-label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    padding-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .cal-cell {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    min-height: 110px;
+    padding: 10px;
+    transition: 0.15s;
+    cursor: pointer;
+  }
+  .cal-cell:hover { border-color: var(--accent2); }
+  .cal-cell.empty { background: transparent; border-color: transparent; cursor: default; }
+  .cal-cell.today { border-color: var(--accent); }
+  .cal-cell.selected { border-color: var(--accent); background: rgba(200,241,53,0.05); }
+
+  .cal-date {
+    font-family: var(--font-head);
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .cal-cell.today .cal-date {
+    background: var(--accent);
+    color: #0f0f13;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+
+  .cal-event-pill {
+    display: block;
+    font-size: 0.68rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    transition: 0.1s;
+    color: #0f0f13;
+    font-weight: 500;
+  }
+  .cal-event-pill:hover { opacity: 0.85; transform: translateX(2px); }
+
+  /* ── ACTIVITY LIST ── */
+  .activities-section { margin-top: 8px; }
+  .activities-list { display: flex; flex-direction: column; gap: 12px; }
+
+  .activity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    transition: 0.18s;
+    cursor: pointer;
+  }
+  .activity-card:hover { border-color: var(--accent2); transform: translateY(-1px); }
+
+  .act-color-bar {
+    width: 4px;
+    border-radius: 4px;
+    align-self: stretch;
+    flex-shrink: 0;
+  }
+
+  .act-info { flex: 1; min-width: 0; }
+  .act-title {
+    font-family: var(--font-head);
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .act-meta {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .act-meta span { display: flex; align-items: center; gap: 4px; }
+
+  .act-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 500;
+  }
+  .badge-cat { color: white; }
+  .badge-full { background: rgba(255,77,109,0.2); color: var(--danger); }
+  .badge-open { background: rgba(200,241,53,0.15); color: var(--accent); }
+
+  .act-rsvp-count {
+    font-family: var(--font-head);
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .act-rsvp-count small { display: block; font-size: 0.65rem; font-weight: 400; font-family: var(--font-body); }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 560px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(24px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+  .modal-title { font-family: var(--font-head); font-size: 1.4rem; font-weight: 800; }
+  .modal-close {
+    background: var(--surface2);
+    border: none;
+    color: var(--text-muted);
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.15s;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: var(--border); color: var(--text); }
+
+  /* ── FORM ── */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    padding: 10px 14px;
+    transition: 0.15s;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200,241,53,0.1);
+  }
+  .form-textarea { resize: vertical; min-height: 80px; }
+  .form-select option { background: var(--surface2); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 24px; }
+
+  /* ── DETAIL MODAL ── */
+  .detail-header-strip {
+    height: 6px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+  }
+  .detail-title { font-family: var(--font-head); font-size: 1.6rem; font-weight: 800; margin-bottom: 8px; }
+  .detail-meta { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+  .detail-meta-row { display: flex; align-items: center; gap: 10px; font-size: 0.875rem; color: var(--text-muted); }
+  .detail-meta-row .icon { font-size: 1rem; }
+  .detail-desc { font-size: 0.9rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 20px; }
+
+  .rsvp-section { border-top: 1px solid var(--border); padding-top: 20px; }
+  .rsvp-title { font-family: var(--font-head); font-weight: 700; margin-bottom: 12px; font-size: 0.95rem; }
+  .rsvp-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .rsvp-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    color: var(--text-muted);
+  }
+  .rsvp-form { display: flex; gap: 8px; }
+  .rsvp-form input { flex: 1; }
+
+  .detail-actions { display: flex; gap: 8px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px; }
+
+  /* ── EMPTY STATE ── */
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .emoji { font-size: 3rem; margin-bottom: 12px; }
+  .empty-state h3 { font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-size: 0.875rem;
+    z-index: 2000;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: 0.3s ease;
+    max-width: 320px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--accent); color: var(--accent); }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .calendar-grid { grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .cal-cell { min-height: 70px; padding: 6px; }
+    header { padding: 16px 20px; }
+    .main { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Activity<span>Hub</span></div>
+  <div class="header-actions">
+    <button class="btn btn-primary" onclick="openCreateModal()">+ New Activity</button>
+  </div>
+</header>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="mini-calendar">
+      <div class="mini-cal-header">
+        <button onclick="changeMonth(-1)">&#8592;</button>
+        <h3 id="miniCalTitle"></h3>
+        <button onclick="changeMonth(1)">&#8594;</button>
+      </div>
+      <div class="mini-cal-grid" id="miniCalGrid"></div>
+    </div>
+
+    <div class="categories-section">
+      <p class="section-title">Filter by Category</p>
+      <div class="category-filters" id="categoryFilters">
+        <div class="cat-chip active" data-cat="all" onclick="filterByCategory('all', this)">
+          <span class="cat-dot" style="background:#888899"></span>
+          <span>All Categories</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="view-header">
+      <div>
+        <div class="view-title" id="mainTitle"></div>
+        <div class="view-subtitle" id="mainSubtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="changeMonth(-1)">&#8592; Prev</button>
+        <button class="btn btn-ghost" onclick="goToday()">Today</button>
+        <button class="btn btn-ghost" onclick="changeMonth(1)">Next &#8594;</button>
+      </div>
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="calendar-grid" id="calendarGrid"></div>
+
+    <!-- Activities List -->
+    <div class="activities-section">
+      <p class="section-title" id="listTitle">Upcoming Activities</p>
+      <div class="activities-list" id="activitiesList"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ── CREATE/EDIT MODAL ── -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="formModalTitle">New Activity</div>
+      <button class="modal-close" onclick="closeModal('createModal')">✕</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Title *</label>
+      <input type="text" class="form-input" id="f_title" placeholder="e.g. Basketball Pickup Game">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description</label>
+      <textarea class="form-textarea" id="f_desc" placeholder="What's this activity about?"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-select" id="f_category"></select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Location</label>
+        <input type="text" class="form-input" id="f_location" placeholder="e.g. Room 204">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Start Date & Time *</label>
+        <input type="datetime-local" class="form-input" id="f_start">
+      </div>
+      <div class="form-group">
+        <label class="form-label">End Date & Time *</label>
+        <input type="datetime-local" class="form-input" id="f_end">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Max Participants</label>
+        <input type="number" class="form-input" id="f_max" placeholder="Leave blank = unlimited" min="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Your Name *</label>
+        <input type="text" class="form-input" id="f_creator" placeholder="Created by">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal('createModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitActivity()" id="submitBtn">Create Activity</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── DETAIL MODAL ── -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div></div>
+      <button class="modal-close" onclick="closeModal('detailModal')">✕</button>
+    </div>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── STATE ──
+let currentYear  = new Date().getFullYear();
+let currentMonth = new Date().getMonth() + 1;
+let activities   = [];
+let categories   = [];
+let activeCategory = 'all';
+let editingId    = null;
+const API = 'php/api.php';
+
+// ── INIT ──
+async function init() {
+  await loadCategories();
+  await loadActivities();
+  renderMiniCal();
+}
+
+// ── API CALLS ──
+async function loadActivities() {
+  const res  = await fetch(`${API}?action=get_activities&month=${currentMonth}&year=${currentYear}`);
+  activities = await res.json();
+  renderCalendar();
+  renderList();
+}
+
+async function loadCategories() {
+  const res  = await fetch(`${API}?action=get_categories`);
+  categories = await res.json();
+  populateCategoryFilter();
+  populateCategorySelect();
+}
+
+// ── RENDER MINI CALENDAR ──
+function renderMiniCal() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('miniCalTitle').textContent = `${months[currentMonth-1]} ${currentYear}`;
+  const grid = document.getElementById('miniCalGrid');
+  grid.innerHTML = '';
+
+  ['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(d => {
+    const el = document.createElement('div');
+    el.className = 'day-label'; el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const firstDay  = new Date(currentYear, currentMonth - 1, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+  const today     = new Date();
+  const eventDays = new Set(activities.map(a => new Date(a.start_datetime).getDate()));
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div'); el.className = 'day empty'; grid.appendChild(el);
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const el = document.createElement('div');
+    el.className = 'day';
+    el.textContent = d;
+    if (d === today.getDate() && currentMonth === today.getMonth()+1 && currentYear === today.getFullYear()) el.classList.add('today');
+    if (eventDays.has(d)) el.classList.add('has-event');
+    el.onclick = () => scrollToDay(d);
+    grid.appendChild(el);
+  }
+}
+
+// ── RENDER MAIN CALENDAR ──
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('mainTitle').textContent = `${months[currentMonth-1]} ${currentYear}`;
+  document.getElementById('mainSubtitle').textContent = `${filteredActivities().length} activities this month`;
+
+  const grid = document.getElementById('calendarGrid');
+  grid.innerHTML = '';
+
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d => {
+    const el = document.createElement('div'); el.className = 'cal-day-label'; el.textContent = d;
+    grid.appendChild(el);
+  });
+
+  const firstDay    = new Date(currentYear, currentMonth - 1, 1).getDay();
+  const daysInMonth = new Date(currentYear, currentMonth, 0).getDate();
+  const today       = new Date();
+
+  for (let i = 0; i < firstDay; i++) {
+    const el = document.createElement('div'); el.className = 'cal-cell empty'; grid.appendChild(el);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    cell.id = `day-${d}`;
+
+    const isToday = d === today.getDate() && currentMonth === today.getMonth()+1 && currentYear === today.getFullYear();
+    if (isToday) cell.classList.add('today');
+
+    const dateEl = document.createElement('div');
+    dateEl.className = 'cal-date';
+    dateEl.textContent = d;
+    cell.appendChild(dateEl);
+
+    const dayActivities = filteredActivities().filter(a => new Date(a.start_datetime).getDate() === d);
+    dayActivities.slice(0,3).forEach(a => {
+      const pill = document.createElement('span');
+      pill.className = 'cal-event-pill';
+      pill.style.background = a.category_color || '#7c6af7';
+      pill.textContent = `${a.category_icon || '📌'} ${a.title}`;
+      pill.onclick = (e) => { e.stopPropagation(); openDetail(a.id); };
+      cell.appendChild(pill);
+    });
+    if (dayActivities.length > 3) {
+      const more = document.createElement('span');
+      more.style.cssText = 'font-size:0.65rem;color:var(--text-muted);padding-left:4px;';
+      more.textContent = `+${dayActivities.length - 3} more`;
+      cell.appendChild(more);
+    }
+
+    grid.appendChild(cell);
+  }
+}
+
+// ── RENDER LIST ──
+function renderList() {
+  const list = document.getElementById('activitiesList');
+  const fa   = filteredActivities();
+  document.getElementById('listTitle').textContent =
+    activeCategory === 'all' ? `All Activities (${fa.length})` : `Filtered Activities (${fa.length})`;
+
+  if (fa.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="emoji">📭</div><h3>No activities yet</h3><p>Be the first to create one!</p></div>`;
+    return;
+  }
+
+  list.innerHTML = fa.map(a => {
+    const start   = new Date(a.start_datetime);
+    const isFull  = a.max_participants && a.rsvp_count >= a.max_participants;
+    const dateStr = start.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+    const timeStr = start.toLocaleTimeString('en-US', {hour:'2-digit', minute:'2-digit'});
+    return `
+      <div class="activity-card" onclick="openDetail(${a.id})">
+        <div class="act-color-bar" style="background:${a.category_color||'#7c6af7'}"></div>
+        <div class="act-info">
+          <div class="act-title">${a.category_icon||'📌'} ${a.title}</div>
+          <div class="act-meta">
+            <span>📅 ${dateStr}</span>
+            <span>🕐 ${timeStr}</span>
+            ${a.location ? `<span>📍 ${a.location}</span>` : ''}
+            <span>👤 ${a.created_by}</span>
+          </div>
+          <div class="act-badges">
+            <span class="badge badge-cat" style="background:${a.category_color||'#7c6af7'}22;color:${a.category_color||'#7c6af7'}">${a.category_name||'General'}</span>
+            ${isFull ? '<span class="badge badge-full">Full</span>' : '<span class="badge badge-open">Open</span>'}
+          </div>
+        </div>
+        <div class="act-rsvp-count">
+          ${a.rsvp_count}${a.max_participants ? '/'+a.max_participants : ''}
+          <small>joined</small>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── DETAIL MODAL ──
+async function openDetail(id) {
+  const res = await fetch(`${API}?action=get_activity&id=${id}`);
+  const a   = await res.json();
+  if (a.error) { showToast(a.error, 'error'); return; }
+
+  const start   = new Date(a.start_datetime);
+  const end     = new Date(a.end_datetime);
+  const isFull  = a.max_participants && a.rsvp_count >= a.max_participants;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-header-strip" style="background:${a.category_color||'#7c6af7'}"></div>
+    <div class="detail-title">${a.title}</div>
+    <div class="detail-meta">
+      <div class="detail-meta-row"><span class="icon">📅</span>${start.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</div>
+      <div class="detail-meta-row"><span class="icon">🕐</span>${start.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})} – ${end.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'})}</div>
+      ${a.location ? `<div class="detail-meta-row"><span class="icon">📍</span>${a.location}</div>` : ''}
+      <div class="detail-meta-row"><span class="icon">👤</span>Organized by ${a.created_by}</div>
+      <div class="detail-meta-row"><span class="icon">🏷️</span>${a.category_icon||'📌'} ${a.category_name||'General'}</div>
+      <div class="detail-meta-row"><span class="icon">👥</span>${a.rsvp_count}${a.max_participants?'/'+a.max_participants:''} joined ${isFull?'<span style="color:var(--danger);font-size:0.8rem">(Full)</span>':''}</div>
+    </div>
+    ${a.description ? `<div class="detail-desc">${a.description}</div>` : ''}
+    <div class="rsvp-section">
+      <div class="rsvp-title">👋 Who's joining</div>
+      <div class="rsvp-list" id="rsvpList">
+        ${a.rsvps.length ? a.rsvps.map(r=>`<span class="rsvp-chip">${r.participant_name}</span>`).join('') : '<span style="color:var(--text-muted);font-size:0.85rem">No one yet — be the first!</span>'}
+      </div>
+      ${!isFull ? `
+      <div class="rsvp-form">
+        <input type="text" class="form-input" id="rsvpName" placeholder="Your name to join...">
+        <button class="btn btn-primary" onclick="submitRsvp(${a.id})">Join!</button>
+      </div>` : '<p style="color:var(--danger);font-size:0.85rem">This activity is full.</p>'}
+    </div>
+    <div class="detail-actions">
+      <button class="btn btn-secondary" onclick="openEditModal(${a.id})">✏️ Edit</button>
+      <button class="btn btn-danger" onclick="deleteActivity(${a.id})">🗑 Delete</button>
+    </div>`;
+
+  openModal('detailModal');
+}
+
+// ── RSVP ──
+async function submitRsvp(activityId) {
+  const name = document.getElementById('rsvpName').value.trim();
+  if (!name) { showToast('Please enter your name!', 'error'); return; }
+
+  const res  = await fetch(`${API}?action=rsvp`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({activity_id: activityId, participant_name: name})
+  });
+  const data = await res.json();
+  if (data.error) { showToast(data.error, 'error'); return; }
+  showToast(data.message, 'success');
+  await loadActivities();
+  openDetail(activityId);
+}
+
+// ── CREATE / EDIT ──
+function openCreateModal() {
+  editingId = null;
+  document.getElementById('formModalTitle').textContent = 'New Activity';
+  document.getElementById('submitBtn').textContent = 'Create Activity';
+  ['f_title','f_desc','f_location','f_creator'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f_max').value = '';
+  document.getElementById('f_start').value = '';
+  document.getElementById('f_end').value = '';
+  openModal('createModal');
+}
+
+async function openEditModal(id) {
+  closeModal('detailModal');
+  const res = await fetch(`${API}?action=get_activity&id=${id}`);
+  const a   = await res.json();
+  editingId = id;
+  document.getElementById('formModalTitle').textContent = 'Edit Activity';
+  document.getElementById('submitBtn').textContent = 'Save Changes';
+  document.getElementById('f_title').value    = a.title;
+  document.getElementById('f_desc').value     = a.description || '';
+  document.getElementById('f_location').value = a.location || '';
+  document.getElementById('f_max').value      = a.max_participants || '';
+  document.getElementById('f_category').value = a.category_id || '';
+  document.getElementById('f_start').value    = a.start_datetime.slice(0,16);
+  document.getElementById('f_end').value      = a.end_datetime.slice(0,16);
+  openModal('createModal');
+}
+
+async function submitActivity() {
+  const payload = {
+    title:            document.getElementById('f_title').value.trim(),
+    description:      document.getElementById('f_desc').value.trim(),
+    category_id:      document.getElementById('f_category').value || null,
+    location:         document.getElementById('f_location').value.trim(),
+    start_datetime:   document.getElementById('f_start').value,
+    end_datetime:     document.getElementById('f_end').value,
+    max_participants: document.getElementById('f_max').value || null,
+    created_by:       document.getElementById('f_creator').value.trim(),
+  };
+
+  if (!payload.title || !payload.start_datetime || !payload.end_datetime || (!editingId && !payload.created_by)) {
+    showToast('Please fill in all required fields!', 'error'); return;
+  }
+
+  const action = editingId ? 'update_activity' : 'create_activity';
+  if (editingId) payload.id = editingId;
+
+  const res  = await fetch(`${API}?action=${action}`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await res.json();
+  if (data.error) { showToast(data.error, 'error'); return; }
+  showToast(data.message, 'success');
+  closeModal('createModal');
+  await loadActivities();
+}
+
+async function deleteActivity(id) {
+  if (!confirm('Delete this activity?')) return;
+  const res  = await fetch(`${API}?action=delete_activity&id=${id}`);
+  const data = await res.json();
+  showToast(data.message, 'success');
+  closeModal('detailModal');
+  await loadActivities();
+}
+
+// ── CATEGORIES ──
+function populateCategoryFilter() {
+  const container = document.getElementById('categoryFilters');
+  categories.forEach(c => {
+    const el = document.createElement('div');
+    el.className = 'cat-chip';
+    el.dataset.cat = c.id;
+    el.innerHTML = `<span class="cat-dot" style="background:${c.color}"></span><span>${c.icon} ${c.name}</span>`;
+    el.onclick = () => filterByCategory(c.id, el);
+    container.appendChild(el);
+  });
+}
+
+function populateCategorySelect() {
+  const sel = document.getElementById('f_category');
+  sel.innerHTML = '<option value="">No Category</option>';
+  categories.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = `${c.icon} ${c.name}`;
+    sel.appendChild(opt);
+  });
+}
+
+function filterByCategory(catId, el) {
+  activeCategory = catId;
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderCalendar();
+  renderList();
+}
+
+function filteredActivities() {
+  if (activeCategory === 'all') return activities;
+  return activities.filter(a => String(a.category_id) === String(activeCategory));
+}
+
+// ── NAVIGATION ──
+async function changeMonth(dir) {
+  currentMonth += dir;
+  if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+  if (currentMonth < 1)  { currentMonth = 12; currentYear--; }
+  await loadActivities();
+  renderMiniCal();
+}
+
+function goToday() {
+  const now = new Date();
+  currentYear = now.getFullYear(); currentMonth = now.getMonth() + 1;
+  loadActivities(); renderMiniCal();
+}
+
+function scrollToDay(d) {
+  const el = document.getElementById(`day-${d}`);
+  if (el) el.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// ── MODAL HELPERS ──
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(o =>
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); })
+);
+
+// ── TOAST ──
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
