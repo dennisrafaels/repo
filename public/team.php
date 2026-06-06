@@ -1,24 +1,13 @@
 <?php
-$members = [
-    ['id' => '413856047', 'name' => '劉建宏', 'role' => 'Full Stack Developer', 'avatar' => '👨‍💻', 'color' => '#c8f135',
-     'bio' => 'Responsible for integrating frontend and backend systems, ensuring smooth communication between the PHP server and MariaDB database.',
-     'skills' => ['PHP', 'MariaDB', 'HTML', 'CSS']],
-    ['id' => '413855221', 'name' => '原仁一郎', 'role' => 'Backend Developer', 'avatar' => '👨‍🔧', 'color' => '#7c6af7',
-     'bio' => 'Developed the server-side PHP logic, API endpoints, and handled database queries and CRUD operations.',
-     'skills' => ['PHP', 'SQL', 'REST API', 'Linux']],
-    ['id' => '413856062', 'name' => '姚昭揚', 'role' => 'Frontend Developer', 'avatar' => '👨‍🎨', 'color' => '#ff9800',
-     'bio' => 'Designed and built the user interface and calendar views. Focused on creating a clean and responsive user experience.',
-     'skills' => ['HTML', 'CSS', 'JavaScript', 'UI Design']],
-    ['id' => '413854679', 'name' => '歐陽宏星', 'role' => 'Database Administrator', 'avatar' => '👨‍🔬', 'color' => '#ff5722',
-     'bio' => 'Managed the database schema design process from ERD to 3NF, and handled MariaDB setup and optimization on the Raspberry Pi.',
-     'skills' => ['MariaDB', 'SQL', 'ERD', 'RPi Setup']],
-    ['id' => '413856187', 'name' => '蕭嘉翔', 'role' => 'Project Manager', 'avatar' => '👨‍📋', 'color' => '#00bcd4',
-     'bio' => 'Coordinated team workflow, managed the GitHub repository, and wrote project documentation including README and installation guides.',
-     'skills' => ['Git', 'GitHub', 'Documentation', 'Testing']],
-    ['id' => '413855742', 'name' => '陳永強', 'role' => 'System Administrator', 'avatar' => '👨‍💼', 'color' => '#e91e63',
-     'bio' => 'Handled server configuration and deployment on the Raspberry Pi Zero 2W, including Apache, PHP, and network setup.',
-     'skills' => ['Linux', 'Apache', 'RPi', 'Networking']],
-];
+// team.php — Team introduction page
+// Reads member data from private/members.db (SQLite)
+
+$dbPath = __DIR__ . '/../private/members.db';
+$db = new PDO("sqlite:" . $dbPath);
+$db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$stmt = $db->query("SELECT * FROM members ORDER BY id ASC");
+$members = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +35,6 @@ $members = [
   .hero { text-align:center; padding:80px 20px 60px; border-bottom:1px solid var(--border); }
   .hero-tag { display:inline-block; background:rgba(200,241,53,0.1); color:var(--accent); border:1px solid rgba(200,241,53,0.3); border-radius:20px; font-size:0.75rem; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; padding:5px 14px; margin-bottom:20px; }
   .hero h1 { font-family:var(--font-head); font-size:clamp(2rem,5vw,3.5rem); font-weight:800; line-height:1.1; margin-bottom:16px; }
-  .hero h1 em { color:var(--accent); font-style:normal; }
   .hero p { color:var(--text-muted); font-size:1rem; max-width:500px; margin:0 auto; line-height:1.6; }
 
   .team-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; max-width:1100px; margin:60px auto; padding:0 36px; }
@@ -101,7 +89,7 @@ $members = [
     <div class="stat-label">Team Members</div>
   </div>
   <div class="stat-card">
-    <div class="stat-number">1</div>
+    <div class="stat-number">3</div>
     <div class="stat-label">Database Tables</div>
   </div>
   <div class="stat-card">
@@ -110,18 +98,20 @@ $members = [
   </div>
 </div>
 
-<!-- TEAM MEMBERS (rendered by PHP) -->
+<!-- TEAM MEMBERS (from SQLite DB) -->
 <div class="team-grid">
-  <?php foreach($members as $m): ?>
-  <div class="member-card" style="--accent-color:<?= $m['color'] ?>">
-    <div class="member-avatar"><?= $m['avatar'] ?></div>
+  <?php foreach($members as $m):
+    $skills = explode(',', $m['skills']);
+  ?>
+  <div class="member-card" style="--accent-color:<?= htmlspecialchars($m['color']) ?>">
+    <div class="member-avatar"><?= htmlspecialchars($m['avatar']) ?></div>
     <div class="member-name"><?= htmlspecialchars($m['name']) ?></div>
-    <div class="member-role"><?= htmlspecialchars($m['role']) ?></div>
-    <div class="member-id">Student ID: <?= htmlspecialchars($m['id']) ?></div>
+    <div class="member-role" style="color:<?= htmlspecialchars($m['color']) ?>"><?= htmlspecialchars($m['role']) ?></div>
+    <div class="member-id">Student ID: <?= htmlspecialchars($m['student_id']) ?></div>
     <p class="member-bio"><?= htmlspecialchars($m['bio']) ?></p>
     <div class="member-skills">
-      <?php foreach($m['skills'] as $skill): ?>
-        <span class="skill-tag"><?= htmlspecialchars($skill) ?></span>
+      <?php foreach($skills as $skill): ?>
+        <span class="skill-tag"><?= htmlspecialchars(trim($skill)) ?></span>
       <?php endforeach; ?>
     </div>
   </div>
@@ -144,6 +134,7 @@ $members = [
         <span class="tech-badge">CSS3</span>
         <span class="tech-badge">PHP</span>
         <span class="tech-badge">MariaDB</span>
+        <span class="tech-badge">SQLite</span>
         <span class="tech-badge">Apache</span>
         <span class="tech-badge">RPi Zero 2W</span>
       </div>

@@ -1,6 +1,6 @@
 <?php
 // index.php — Server-side rendered Activity Calendar
-require_once 'php/config.php';
+require_once '../php/config.php';
 
 $db = getDB();
 
