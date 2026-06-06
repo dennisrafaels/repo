@@ -313,7 +313,7 @@ if ($next_month > 12) { $next_month = 1; $next_year++; }
   <div class="logo">Activity<span>Hub</span></div>
   <div class="header-nav">
     <a href="index.php">Calendar</a>
-    <a href="team.html">Our Team</a>
+    <a href="team.php">Our Team</a>
     <a href="index.php?action=new&month=<?= $month ?>&year=<?= $year ?>" class="btn btn-primary" style="margin-left:16px">+ New Activity</a>
   </div>
 </header>

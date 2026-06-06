@@ -4,8 +4,8 @@
 
 define('DB_HOST', 'localhost');
 define('DB_NAME', 'activity_calendar');
-define('DB_USER', 'root');        // Change to your DB username
-define('DB_PASS', '');            // Change to your DB password
+define('DB_USER', 'caluser');        // Change to your DB username
+define('DB_PASS', 'calpass123');            // Change to your DB password
 define('DB_CHARSET', 'utf8mb4');
 
 function getDB() {
